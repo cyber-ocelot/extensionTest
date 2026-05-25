@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Extension</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+
+  <!-- ═══ HEADER ═══════════════════════════════════════════════════════ -->
+  <header class="header">
+    <div class="header-icon">✦</div>
+    <div class="header-text">
+      <h1 class="title">My Extension</h1>
+      <p class="subtitle">Your helpful companion</p>
+    </div>
+    <div class="header-badge">v1.0</div>
+  </header>
+
+  <!-- ═══ MAIN CONTENT ════════════════════════════════════════════════ -->
+  <main class="main">
+
+    <!-- Status Card -->
+    <div class="card card--status">
+      <div class="card-label">Current Page</div>
+      <div class="card-value" id="current-url">Loading…</div>
+    </div>
+
+    <!-- Info / Flags Card -->
+    <div class="card card--flags">
+      <div class="flags-header">
+        <span class="flags-icon">🚩</span>
+        <span class="flags-label">Flags</span>
+      </div>
+      <p class="flags-text" id="flagsEl">
+        0
+      </p>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="actions">
+      <button class="btn btn--primary" id="btn-action">
+        Do Something
+      </button>
+      <button class="btn btn--secondary" id="btn-settings">
+        ⚙ Settings
+      </button>
+    </div>
+
+    <!-- Output / Result Area -->
+    <div class="output" id="output" hidden>
+      <div class="output-label">Result</div>
+      <div class="output-text" id="output-text"></div>
+    </div>
+
+  </main>
+
+  <!-- ═══ FOOTER ═══════════════════════════════════════════════════════ -->
+  <footer class="footer">
+    <span>Made with care · <a href="#" id="footer-link">Learn more</a></span>
+  </footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>
