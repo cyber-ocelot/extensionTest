@@ -63,8 +63,8 @@ import { onAuthStateChanged } from 'firebase/auth'
 
 import { auth } from './firebase'
 
-import Login from './Login'
-import Dashboard from './Dashboard'
+import Login from './components/Login'
+import Dashboard from './components/Dashboard'
 
 function App() {
   const [ user, setUser ] = useState(null);

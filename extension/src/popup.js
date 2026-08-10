@@ -62,7 +62,7 @@
 // ── 0. IMPORTS  ──────────────────────────────────────
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "./firebase";
-import { onAuthStateChanged } from "firebase/auth";
+import { signOut, onAuthStateChanged } from "firebase/auth";
 
 // ── 1. TIPS  ─────────────────────────────────────────
 const TIPS = [
@@ -93,10 +93,20 @@ function initializePopup() { // keeps updating/adding cleaner/organized
   onAuthStateChanged ((auth), (user) => { // waits to get auth data before loading
     console.log("[Popup] Auth state:", user);
 
-    if (user) {
+    if (user) { // user is logged in
+      console.log("[Popup] Logged in:", user.email);
+
+      btnLogin.textContent="Logout"; // change button interface to logout
+
       loadFlagCount();
+
     } else {
-      flagsEl.textContent = "⚠️ Flags detected: --"
+      console.log("[Popup] User logged out."); // user is logged out
+
+      btnLogin.textContent="Login"; // change button interface to login
+
+      flagsEl.textContent = "⚠️ Flags detected: --" // resets to default when logged out
+      flagsEl.hidden=false;
     }
   });
 }
@@ -148,22 +158,38 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {});
 // ── 7. PRIMARY ACTION ─────────────────────────────────
 // replace this with whatever your extension actually does!
 btnAction.addEventListener("click", () => {
-  showOutput("✅ Action complete! Replace this handler in popup.js with your own logic.");
   
-  // Generate the correct internal URL for your file
-  const pageUrl = chrome.runtime.getURL("index.html");
-  // Open it in a new browser tab
-  chrome.tabs.create({ url: pageUrl });
+  chrome.tabs.create({
+    url: "http://localhost:5173/"
+  });
+
 });
 
 // ── 8. LOGIN BUTTON ────────────────────────────────
 // sends login message to background.js
-btnLogin.addEventListener("click", () => {
+btnLogin.addEventListener("click", async () => {
   console.log("[Popup] Login button clicked.");
   
-  chrome.runtime.sendMessage ({
-    type: "LOGIN"
-  });
+  if (auth.currentUser) { // if user currently logged in
+    
+    // logout button backend
+    try {
+      await signOut(auth);
+      console.log("[Popup] Logged out.");
+
+    } catch(error) {
+      console.error("[Popup] Logout failed:", error);
+    }
+
+  } else {
+
+    // login button backend
+    chrome.runtime.sendMessage({
+      type: "LOGIN"
+    });
+
+  }
+
 });
 
 // ── 9. FIREBASE READ ───────────────────────────────────

@@ -57,7 +57,7 @@
 
 import { signInWithPopup } from "firebase/auth";
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { auth, provider, db } from "./firebase";
+import { auth, provider, db } from "../firebase";
 import './index.css'
 
 function Login({ text }) {

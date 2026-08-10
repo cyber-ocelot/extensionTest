@@ -56,7 +56,7 @@
  */
 
 import { signOut } from "firebase/auth";
-import { auth } from "./firebase";
+import { auth } from "../firebase";
 
 function Dashboard({ user }) {
     const handleLogout = async() => {
