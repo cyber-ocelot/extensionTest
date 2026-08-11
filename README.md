@@ -38,7 +38,7 @@ druid/
     ├── firebase.js
     ├── index.css
     ├── Login.jsx
-    ├── main.jsx
+    └── main.jsx
   ├── eslint.config.js
   ├── index.html
   ├── package-lock.json
