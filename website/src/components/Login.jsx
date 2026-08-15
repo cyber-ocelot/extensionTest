@@ -56,18 +56,18 @@
  */
 
 import { signInWithPopup } from "firebase/auth";
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { auth, provider, db } from "../firebase";
-import '../index.css'
+//import { doc, getDoc, setDoc } from 'firebase/firestore';
+//import { auth, provider, db } from "../firebase";
+import '../index.css';
 
 function Login({ text }) {
-  const handleLogin = async () => {
+  const handleLogin = async () => { // handler
     try {
-      const result = await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider); // sign in popup
 
       const user = result.user;
 
-      const userRef = doc(db, 'users', user.uid);
+      /*const userRef = doc(db, 'users', user.uid);
 
       const userSnap = await getDoc(userRef);
 
@@ -79,15 +79,17 @@ function Login({ text }) {
         role: 'student',
         createdAt: new Date().toISOString()
        });
-      }
+      }*/
 
-      alert(`Welcome ${user.displayName}!`);
+      console.log("[Login] Signed in:", user);
+
+      alert(`Welcome ${user.displayName}!`); // welcome alert
     } catch (error) {
         console.error(error);
     }
   };
 
-  return (
+  return ( // actual UI
     <button className="btn-primary" onClick={handleLogin}>
       <span>{text}</span>
     </button>

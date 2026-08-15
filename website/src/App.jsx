@@ -55,31 +55,62 @@
  * this license.
  */
 
-import './App.css'
-import './index.css'
+import './App.css'; // stylesheets
+import './index.css';
 
-import { useEffect, useState } from 'react'
-import { onAuthStateChanged } from 'firebase/auth'
+import { useEffect, useState } from 'react'; // react info handlers
 
-import { auth } from './firebase'
+import { onAuthStateChanged } from 'firebase/auth'; // firebase auth/data handlers
+import { auth, db } from './firebase';
+import { doc, getDoc } from 'firebase/firestore'; // firestore writes
 
-import Login from './components/Login'
-import Dashboard from './components/Dashboard'
+import Login from './components/Login'; // React login interface components
+import ProfileSetup from './components/ProfileSetup';
+
+import StudentDashboard from './components/StudentDashboard'; // React dashoard components
+import TeacherDashboard from './components/TeacherDashboard';
+import GuardianDashboard from './components/GuardianDashboard';
+
 
 function App() {
-  const [ user, setUser ] = useState(null);
+  const [ user, setUser ] = useState(null); // auth user info
   const [ loading, setLoading ] = useState(true);
 
+  const [profile, setProfile] = useState(null); // user document/profile info
+  const [profileLoading, setProfileLoading] = useState(true);
+
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
-      setLoading(false);
+
+      if (!currentUser) { // if no user logged in
+        setProfile(null);
+        setProfileLoading(false);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const userRef = doc(db, "users", currentUser.uid); // gets firebase write
+        const userSnap = await getDoc(userRef);
+
+        if (userSnap.exists()) { // checks if user data exists
+          setProfile(userSnap.data());
+        } else {
+          setProfile(null);
+        }
+      } catch (error) {
+        console.error("[App] Failed to load profile:", error);
+      }
+
+      setLoading(false); // loading off
+      setProfileLoading(false);
     });
 
     return() => unsubscribe();
   }, []);
 
-  if (loading) {
+  if (loading) { // loading page
     return (
       <section className="hero">
           <h2 className="section-title">Loading Druid...</h2>
@@ -87,11 +118,48 @@ function App() {
     )
   }
 
-  if (user) {
-    return <Dashboard user={user} />
+  /*if (user) { // defaults to student dashboard for now
+    return <StudentDashboard user={user}/>
+    //return <Dashboard user={user} />
+  }*/
+  
+  if (user && profileLoading) { // placeholder UI while profile data is loading
+    return (
+      <section className='hero'>
+        <h2 className='section-title'>Loading profile...</h2>
+      </section>
+    );
   }
 
-  return (
+  if (user && !profile) { // profile doesn't exist
+    return ( // new account for new user
+      <ProfileSetup
+        user={user}
+        onComplete={async () => {
+          const userRef = doc(db, "users", user.uid);
+          const userSnap = await getDoc(userRef);
+
+          if (userSnap.exists()) {
+            setProfile(userSnap.data());
+          }
+        }}
+      />
+    );
+  }
+
+  if (user && profile.role === "student") { // displays student dashboard if student
+    return <StudentDashboard user={user} />;
+  }
+
+  if (user && profile.role === "teacher") { // displays teacher dashbaord if teacher
+    return <TeacherDashboard user={user} />;
+  }
+
+  if (user && profile.role === "guardian") { // displays guardian dashboard if guardian
+    return <GuardianDashboard user={user} />;
+  }
+
+  return ( // actual UI
     <>
       {/* Orbs */}
       <div className="orb-layer">
@@ -220,7 +288,7 @@ function App() {
         <span><a href="#">Settings</a> · <a href="#">Privacy</a></span>
       </footer>
     </>
-  )
+  );
 }
 
 export default App
