@@ -102,8 +102,10 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
     // send same banner as "PROMPT_FLAGGED"
     chrome.tabs.query ({ active: true, currentWindow: true }, (tabs) => {
+
       chrome.tabs.sendMessage(tabs[0].id, { type: "PROMPT_FLAGGED", data: "image" })
         .catch(() => console.log("[Background] Could not reach content script."));
+      
     });
 
     // write to Firestore
@@ -256,12 +258,11 @@ async function analyzePrompt(prompt, AIstatus, tabId) {
   console.log("[Background] Flagged:", flagged);
 
   if (flagged) {
-
-    // identify tab that was flagged
-    const tabId = sender.tab?.id;
     
     // send banner to content.js
     if (tabId) {
+      console.log("[Background] Sending PROMPT_FLAGGED to tab:", tabId);
+
       chrome.tabs.sendMessage(
         tabId, 
         { 

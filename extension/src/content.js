@@ -96,6 +96,8 @@ function init() {
 
     // flagged prompt
     if (message.type === "PROMPT_FLAGGED") {
+      console.log("[Content] PROMPT_FLAGGED received:", message);
+      
       let warningText = ""
 
       // set warning text based on type of data
@@ -129,25 +131,49 @@ function init() {
   if (AIstatus) {
     let prompt = ""
 
+    // temporary tester for changes/new elements on UI
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        for (const node of mutation.addedNodes) {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            console.log("[Content] New element:", node);
+          }
+        }
+      }
+    });
+
+    // set up of above MutationObserver
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+
     // regular keyboard strokes detection
     document.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
         console.log("[Content] Prompt sent:", prompt);
+
         handlePrompt(prompt);
         prompt = "";
+
       } else if (event.key === "Backspace") {
         prompt = prompt.slice(0, -1);
+
       } else if (event.key.length === 1) {
         prompt += event.key;
+
       } else if (event.ctrlKey || event.metaKey)  {
         prompt += "ctrl/cmd";
+
         console.log("[Content] Ctrl/cmd detected");
+
       }
     });
 
     // copy/paste keyboard strokes detection
     document.addEventListener("paste", (event) => {
       const pastedText = event.clipboardData.getData("text");
+
       if (pastedText) {
         console.log("[Content] Pasted:", pastedText);
         flagPrompt("paste");
@@ -155,14 +181,28 @@ function init() {
       }
     });
 
+    // click detection; testing
+    /*document.addEventListener("click", (event) => {
+      console.log("[Content] Clicked:", event.target);
+    });*/
+
     // image upload detection
     document.addEventListener("change", (event) => {
+      console.log("[Content] Change event:", event.target);
+
       const target = event.target;
+
       if (target.type === "file" && target.files.length > 0) {
+        console.log("[Content] File input detected", target);
+        
         const file = target.files[0];
+
         if (file.type.startsWith("image/")) {
+
           console.log("[Content] Image uploaded:", file.name);
+
           flagPrompt("upload");
+
           chrome.runtime.sendMessage({
             type: "IMAGE_UPLOADED",
             filename: file.name,
@@ -172,6 +212,67 @@ function init() {
         }
       }
     });
+
+    // ChatGPT specfic image upload detection
+    let detectedChatGPTImage = false;
+
+    const uploadObserver = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        for (const node of mutation.addedNodes) {
+
+          // skip if no new elements
+          if (node.nodeType !== Node.ELEMENT_NODE) {
+            continue;
+          }
+
+          // ignore text nodes/other non-elements
+          if (!(node instanceof Element)) {
+            continue;
+          } 
+
+          // check if new element is ChatGPT's image upload preview
+          const imageButton = node.matches(
+            'button[aria-label="Open image: User uploaded image"]'
+          )
+            ? node
+            : node.querySelector(
+              'button[aria-label="Open image: User uploaded image"]'
+            );
+      
+      /*const imageButton = document.querySelector(
+        'button[aria-label="Open image: User uploaded image"]'
+      );*/
+      
+          if (imageButton) {
+
+            detectedChatGPTImage = true;
+
+            console.log("[Content] ChatGPT image uploaded.");
+
+            flagPrompt("upload");
+
+            chrome.runtime.sendMessage({
+              type: "IMAGE_UPLOADED",
+              filename: file.name,
+              AIstatus: AIstatus,
+              url: window.location.href
+            });
+          }
+        
+        }
+      }
+
+      // allow new uploads only after current is gone
+      /*if (!imageButton) {
+        detectedChatGPTImage = false;
+      }*/
+    });
+
+    // initialize uploadObserver on site
+    uploadObserver.observe(document.body, {
+      childList: true,
+      subtree: true
+    })
 
   }
 
